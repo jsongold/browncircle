@@ -1,4 +1,4 @@
-# The SWE app stack: db / api / web. Run it from apps/swe with ./scripts/dev.sh up
+# The SWE app stack: db / api / web. Run it from the repo root with ./scripts/dev.sh up
 # (per-worktree project name and ports); plain `docker compose up -d --build` also
 # works and uses host ports 8000 (api) and 3000 (web), overridable with API_PORT /
 # WEB_PORT.
@@ -19,9 +19,7 @@ services:
 
   api:
     build:
-      # The SDK repo root while this app is a uv workspace member (see Dockerfile).
-      context: ../..
-      dockerfile: apps/swe/Dockerfile
+      context: .
     depends_on:
       db:
         condition: service_healthy

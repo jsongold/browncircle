@@ -1,0 +1,23 @@
+# swe depends on the morphloop SDK through its public API (harness.sdk) only.
+# harness and domains are root packages here (read from the installed SDK) so the
+# contract can tell harness.sdk apart from the rest of harness.
+[importlinter]
+root_packages =
+    swe
+    harness
+    domains
+
+# domains.dns is SWE code that still ships with the SDK for the v0.1 loop; the one
+# swe -> domains.dns import is allowed until it moves into this repo (morphloop#69).
+[importlinter:contract:swe-imports-only-the-sdk-api]
+name = swe must import harness.sdk only (plus domains.dns for now)
+type = forbidden
+source_modules =
+    swe
+forbidden_modules =
+    harness
+    domains
+ignore_imports =
+    swe.** -> harness.sdk
+    swe.** -> domains.dns
+unmatched_ignore_imports_alerting = none

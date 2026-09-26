@@ -3,23 +3,55 @@ name = "morphloop-swe"
 version = "0.2.0"
 description = "Software Engineering app on the morphloop SDK: lab and diagram artifacts, the SE pack"
 requires-python = ">=3.13"
-dependencies = ["morphloop"]
+dependencies = [
+    # The SDK, pinned to a commit. It ships the migrations and `morphloop migrate`.
+    "morphloop @ git+https://github.com/jsongold/morphloop@a3cee8258186c79298abd491eace76e6ddf7f18a",
+]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.metadata]
+allow-direct-references = true
+
 [tool.hatch.build.targets.wheel]
 packages = ["swe"]
 
-# Inside the SDK repository the SDK is the workspace root; once this app moves to its
-# own repository this becomes a published version of `morphloop`.
-[tool.uv.sources]
-morphloop = { workspace = true }
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "import-linter>=2.15",
+    "mypy>=2.3.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.16.8",
+    "types-docker>=7.2.0.20260827",
+    "types-jsonschema>=4.26.0.20260518",
+    "types-pyyaml>=6.0.12.20260906",
+]
 
-# Standalone run (`cd apps/swe && pytest`); at the repository root the root config
-# collects these tests too.
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+strict = true
+packages = ["swe"]
+
+# The SDK wheel marks harness typed (py.typed) but not domains.
+[[tool.mypy.overrides]]
+module = ["domains", "domains.*"]
+follow_untyped_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = ["--import-mode=importlib"]
 pythonpath = ["tests"]
+
+[tool.ruff.lint.isort]
+# The SDK's packages sort with this app's, as in the SDK repository.
+known-first-party = ["swe", "harness", "domains"]

@@ -7,7 +7,7 @@ container-or-``TEST_DATABASE_URL`` fixture ``tests/adapters/postgres/conftest.py
 uses, self-contained here to keep the app/SDK test trees independent) and a
 fake LLM (:class:`~harness.adapters.fake_llm.FakeDevLLMProvider`, #130). The lab
 artifact runs over the SDK's in-memory lab fakes (:mod:`harness.testing.fakes`,
-the same doubles ``apps/swe/tests/test_lab_routes.py`` uses) under a fake ``dns``
+the same doubles ``tests/test_lab_routes.py`` uses) under a fake ``dns``
 domain adapter, so nothing here needs the Docker daemon or a lab image.
 
 Flow (issue #34, #68; the schedule step is deferred to #67 per the issue's
@@ -28,18 +28,16 @@ import os
 import time
 import uuid
 from collections.abc import Iterator
-from pathlib import Path
 from typing import Any
 
 import pytest
-from alembic import command
-from alembic.config import Config
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 
 from harness.adapters.fake_llm import FAKE_REPLY_TEXT, FakeDevLLMProvider
 from harness.adapters.postgres.event_store_v2 import PostgresEventStoreV2
+from harness.adapters.postgres.migrate import migrate
 from harness.api.v2.deps import user_id_of
 from harness.cli.rebuild import rebuild as rebuild_v2_views
 from harness.core.contract_schemas import ContractSchemas
@@ -56,7 +54,6 @@ from harness.testing.generated_documents import InMemoryGeneratedDocumentStore
 from swe.app import create_swe_app
 from swe.artifacts.lab.service import LabArtifactService
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
 _PG_IMAGE = "postgres:16"
 _PG_USER = _PG_PASSWORD = _PG_DB = "morphloop_test"
 _PG_READY_TIMEOUT_SECONDS = 60
@@ -69,7 +66,7 @@ DRILL_ITEM_ID = "gen-diagnose-dns-resolver-misconfiguration-001"
 
 
 # --- Postgres: same container-or-TEST_DATABASE_URL fixture as
-# tests/adapters/postgres/conftest.py, kept local so apps/swe/tests does not
+# morphloop's tests/adapters/postgres/conftest.py, kept local so tests/ does not
 # import the SDK's own test tree (it is not part of harness.sdk / harness.testing).
 
 
@@ -132,11 +129,7 @@ def _wait_pg_ready(url: str, deadline: float) -> None:
 
 
 def _migrate(url: str) -> None:
-    config = Config(str(REPO_ROOT / "alembic.ini"))
-    config.set_main_option("script_location", str(REPO_ROOT / "migrations"))
-    with pytest.MonkeyPatch.context() as mp:
-        mp.setenv("DATABASE_URL", url)
-        command.upgrade(config, "head")
+    migrate(url)
 
 
 @pytest.fixture(scope="module")
@@ -164,7 +157,7 @@ def pg_engine(pg_url: str) -> Iterator[Engine]:
 
 # --- a fake `dns` domain adapter: deterministic checks, no Docker, matching
 # the real pack's fixture/check ids (`domains/dns/adapter.py`) so the real
-# ``apps/swe/pack`` artifact spec and drill item can be used unchanged.
+# ``pack/`` artifact spec and drill item can be used unchanged.
 
 
 class _AlwaysPassCheck:
@@ -215,7 +208,7 @@ def test_dns_slice_v02(pg_engine: Engine) -> None:
 
     # The real app, the real SWE pack (create_swe_app's own default); the client
     # never enters the lifespan, so the v0.1 backend is never wired either
-    # (apps/swe/tests/test_lab_routes.py's own idiom).
+    # (tests/test_lab_routes.py's own idiom).
     app = create_swe_app()
     app.dependency_overrides[user_id_of] = lambda: user_id
     app.state.event_store_v2 = store

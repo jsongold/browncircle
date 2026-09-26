@@ -1,4 +1,4 @@
-# apps/swe/web/ — standard UI (optional)
+# web/ — standard UI (optional)
 
 The SDK's minimal learner UI (ADR-0015). It talks to the harness only through
 the HTTP/WebSocket contract in `contracts/` with a hand-written client
