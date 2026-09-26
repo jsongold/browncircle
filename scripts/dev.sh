@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run the SWE app stack (db / api / web) per worktree, from apps/swe.
+# Run the SWE app stack (db / api / web) per worktree, from the repo root.
 #
 # A compose project name (containers, network, db volume) and host ports are
 # derived from the checkout path, so several worktrees can `up` side by side.
@@ -10,7 +10,7 @@
 #   scripts/dev.sh logs [service]    # follow logs (api/web/db)
 #   scripts/dev.sh e2e [args...]     # Playwright E2E (web/e2e) against this stack
 #
-# The SE pack (apps/swe/pack) is loaded by the api at start; there is no import step.
+# The SE pack (pack/) is loaded by the api at start; there is no import step.
 # --fake-llm (or MORPHLOOP_LLM_PROVIDER=fake in the environment): chat / judge /
 # generate answer with a deterministic fake LLM, so no key is needed. Never in production.
 set -euo pipefail

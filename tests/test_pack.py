@@ -1,4 +1,4 @@
-"""The SE pack (apps/swe/pack/): SDK contracts, cross-file rules and the app's types.
+"""The SE pack (pack/): SDK contracts, cross-file rules and the app's types.
 
 Validates every file listed in the manifest against its pack v2 schema (as the
 SDK's tests/contracts/test_pack_v2_contracts.py does for the fixture pack) and

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
 import vm from "node:vm";
 import ts from "typescript";
@@ -18,8 +19,14 @@ function text(node) {
   return text(node.props.children);
 }
 
-for (const file of readdirSync("../../../contracts/fixtures/plaintext")) {
-  const fixture = JSON.parse(readFileSync(`../../../contracts/fixtures/plaintext/${file}`, "utf8"));
+// The fixtures ship with the morphloop SDK (the locked Python dependency).
+const contracts =
+  process.env.MORPHLOOP_CONTRACTS_DIR ??
+  execFileSync("uv", ["run", "--project", "..", "python", "-c", "from harness.testing import CONTRACTS_DIR; print(CONTRACTS_DIR)"], { encoding: "utf8" }).trim();
+const plaintextDir = `${contracts}/fixtures/plaintext`;
+
+for (const file of readdirSync(plaintextDir)) {
+  const fixture = JSON.parse(readFileSync(`${plaintextDir}/${file}`, "utf8"));
   const result = exports.renderBlock(fixture.markdown);
   assert.equal(text(result.content), fixture.plaintext, file);
   assert.equal(result.artifacts.length, (file.startsWith("artifact-") && !file.includes("lookalike") && !file.includes("multiline") ? 1 : 0), file);

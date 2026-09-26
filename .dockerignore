@@ -1,0 +1,13 @@
+.git
+.worktrees
+**/.venv
+web/
+**/node_modules
+**/.mypy_cache
+**/.pytest_cache
+**/.ruff_cache
+**/__pycache__
+*.pyc
+# Local secrets (.env.local with LLM keys) never enter an image.
+**/.env
+**/.env.*
